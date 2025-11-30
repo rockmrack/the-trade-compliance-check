@@ -28,11 +28,13 @@ export function formatCurrencyCompact(
   currency: string = 'GBP'
 ): string {
   const amount = amountInPence / 100;
+  // UK-only: Always use £ symbol
+  const symbol = '£';
   if (amount >= 1000000) {
-    return `${currency === 'GBP' ? '£' : '$'}${(amount / 1000000).toFixed(1)}M`;
+    return `${symbol}${(amount / 1000000).toFixed(1)}M`;
   }
   if (amount >= 1000) {
-    return `${currency === 'GBP' ? '£' : '$'}${(amount / 1000).toFixed(0)}K`;
+    return `${symbol}${(amount / 1000).toFixed(0)}K`;
   }
   return formatCurrency(amountInPence, currency);
 }
