@@ -9,9 +9,16 @@ import { MINIMUM_COVERAGE_REQUIREMENTS } from '@/lib/utils';
 
 // ============ OPENAI CLIENT ============
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || 'dummy-key-for-build'
+    });
+  }
+  return openaiClient;
+}
 
 // ============ TYPES ============
 
@@ -259,6 +266,7 @@ async function assessDocumentQuality(
   recommendation: string;
 }> {
   try {
+    const openai = getOpenAIClient();
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -297,6 +305,7 @@ async function extractDocumentData(
   imageBase64: string,
   mimeType: string
 ): Promise<ExtractedDocumentData> {
+  const openai = getOpenAIClient();
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
@@ -327,6 +336,7 @@ async function detectFraud(
   mimeType: string
 ): Promise<FraudIndicator[]> {
   try {
+    const openai = getOpenAIClient();
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -485,6 +495,7 @@ export async function verifyGasSafeCard(
 Return ONLY the JSON object.`;
 
   try {
+    const openai = getOpenAIClient();
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
