@@ -7,28 +7,35 @@ export async function updateSession(request: NextRequest) {
     request
   });
 
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet: any) {
-          cookiesToSet.forEach(({ name, value }: any) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request
-          });
-          cookiesToSet.forEach(({ name, value, options }: any) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
+  // Check for required environment variables
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.error('Missing Supabase environment variables');
+    return supabaseResponse;
+  }
+
+  try {
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet: any) {
+            cookiesToSet.forEach(({ name, value }: any) =>
+              request.cookies.set(name, value)
+            );
+            supabaseResponse = NextResponse.next({
+              request
+            });
+            cookiesToSet.forEach(({ name, value, options }: any) =>
+              supabaseResponse.cookies.set(name, value, options)
+            );
+          }
         }
       }
-    }
-  );
+    );
 
   // IMPORTANT: Avoid writing any logic between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
@@ -64,4 +71,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   return supabaseResponse;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return supabaseResponse;
+  }
 }
