@@ -3,6 +3,10 @@
 -- Version: 1.0.1
 -- ===========================================
 
+-- Add deleted_at column to contractors for soft deletes
+ALTER TABLE public.contractors ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_contractors_deleted_at ON public.contractors(deleted_at) WHERE deleted_at IS NOT NULL;
+
 -- Contractor Access Tokens (for passwordless portal access)
 CREATE TABLE public.contractor_access_tokens (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,

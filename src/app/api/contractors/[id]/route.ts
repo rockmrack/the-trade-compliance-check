@@ -243,10 +243,13 @@ export async function DELETE(
       );
     }
 
-    // Soft delete by setting deleted_at
+    // Soft delete by setting deleted_at and is_active
     const { error } = await serviceClient
       .from('contractors')
-      .update({ deleted_at: new Date().toISOString() })
+      .update({
+        deleted_at: new Date().toISOString(),
+        is_active: false
+      } as any)
       .eq('id', id);
 
     if (error) {
