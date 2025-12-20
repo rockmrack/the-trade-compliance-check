@@ -254,7 +254,7 @@ export default function EditContractorPage() {
                   value={tradeType}
                   onValueChange={(value) => setValue('tradeType', value, { shouldDirty: true })}
                 >
-                  <SelectTrigger error={!!errors.tradeType}>
+                  <SelectTrigger className={errors.tradeType ? "border-red-500" : ""}>
                     <SelectValue placeholder="Select trade type" />
                   </SelectTrigger>
                   <SelectContent>

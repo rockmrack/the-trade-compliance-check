@@ -39,39 +39,47 @@ export default async function ContractorDetailPage({ params }: PageProps) {
   const supabase = await createClient();
 
   // Fetch contractor with documents
-  const { data: contractor, error } = await supabase
+  const { data: contractorData, error } = await supabase
     .from('contractors')
     .select('*')
     .eq('id', id)
     .single();
 
-  if (error || !contractor) {
+  if (error || !contractorData) {
     notFound();
   }
 
+  const contractor = contractorData as any;
+
   // Fetch compliance documents
-  const { data: documents } = await supabase
+  const { data: documentsData } = await supabase
     .from('compliance_documents')
     .select('*')
     .eq('contractor_id', id)
     .is('replaced_by_id', null)
     .order('expiry_date', { ascending: true });
 
+  const documents = (documentsData || []) as any[];
+
   // Fetch recent invoices
-  const { data: invoices } = await supabase
+  const { data: invoicesData } = await supabase
     .from('invoices')
     .select('*')
     .eq('contractor_id', id)
     .order('created_at', { ascending: false })
     .limit(5);
 
+  const invoices = (invoicesData || []) as any[];
+
   // Fetch verification logs
-  const { data: verificationLogs } = await supabase
+  const { data: verificationLogsData } = await supabase
     .from('verification_logs')
     .select('*')
     .eq('contractor_id', id)
     .order('created_at', { ascending: false })
     .limit(10);
+
+  const verificationLogs = (verificationLogsData || []) as any[];
 
   const statusConfig = {
     verified: { icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-100', label: 'Verified' },

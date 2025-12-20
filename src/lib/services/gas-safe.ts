@@ -125,7 +125,7 @@ export async function verifyGasSafeForAppliances(
   success: boolean;
   isValid: boolean;
   missingAppliances: string[];
-  error?: string;
+  error?: string | undefined;
 }> {
   const lookup = await lookupGasSafeEngineer(licenceNumber);
 

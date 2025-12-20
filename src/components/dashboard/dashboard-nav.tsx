@@ -11,7 +11,8 @@ import {
   Settings,
   BarChart3,
   Shield,
-  Building2
+  Building2,
+  type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { UserRole } from '@/lib/database.types';
@@ -19,7 +20,7 @@ import type { UserRole } from '@/lib/database.types';
 interface NavItem {
   title: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   roles?: UserRole[];
 }
 

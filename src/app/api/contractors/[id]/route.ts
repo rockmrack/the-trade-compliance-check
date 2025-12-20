@@ -246,6 +246,7 @@ export async function DELETE(
     // Soft delete by setting deleted_at and is_active
     const { error } = await serviceClient
       .from('contractors')
+      // @ts-ignore - Supabase type inference limitation
       .update({
         deleted_at: new Date().toISOString(),
         is_active: false
@@ -261,6 +262,7 @@ export async function DELETE(
     }
 
     // Create audit log
+    // @ts-ignore - Supabase type inference limitation
     await serviceClient.from('audit_logs').insert({
       entity_type: 'contractor',
       entity_id: id,

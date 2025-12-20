@@ -119,9 +119,9 @@ export interface Contractor {
 
 export interface Address {
   line1: string;
-  line2?: string;
+  line2?: string | undefined;
   city: string;
-  county?: string;
+  county?: string | undefined;
   postcode: string;
   country: string;
 }
@@ -231,15 +231,15 @@ export interface CompaniesHouseData {
   companyStatus: string;
   companyType: string;
   dateOfCreation: string;
-  dateOfCessation?: string;
+  dateOfCessation?: string | undefined;
   registeredOfficeAddress: Address;
   sicCodes: string[];
   hasCharges: boolean;
   hasInsolvencyHistory: boolean;
   canFile: boolean;
-  lastAccountsDate?: string;
-  nextAccountsDue?: string;
-  lastConfirmationStatementDate?: string;
+  lastAccountsDate?: string | undefined;
+  nextAccountsDue?: string | undefined;
+  lastConfirmationStatementDate?: string | undefined;
   officers: CompanyOfficer[];
   filingHistory: FilingHistoryItem[];
   fetchedAt: string;
@@ -249,9 +249,9 @@ export interface CompanyOfficer {
   name: string;
   role: string;
   appointedOn: string;
-  resignedOn?: string;
-  nationality?: string;
-  occupation?: string;
+  resignedOn?: string | undefined;
+  nationality?: string | undefined;
+  occupation?: string | undefined;
   address: Partial<Address>;
 }
 

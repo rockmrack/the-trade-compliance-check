@@ -18,12 +18,14 @@ import { formatRelativeTime } from '@/lib/utils';
 export async function RecentActivityWidget() {
   const supabase = await createClient();
 
-  const { data: auditLogs } = await supabase
+  const { data: auditLogsData } = await supabase
     .from('audit_logs')
     .select('*')
     .in('action', ['create', 'update', 'verify', 'approve', 'reject', 'block'])
     .order('created_at', { ascending: false })
     .limit(10);
+
+  const auditLogs = (auditLogsData || []) as any[];
 
   return (
     <Card>

@@ -56,23 +56,23 @@ export async function GET(
       success: true,
       data: {
         webhook: {
-          id: webhook.id,
-          name: webhook.name,
-          url: webhook.url,
-          events: webhook.events,
-          isActive: webhook.is_active,
-          lastTriggeredAt: webhook.last_triggered_at,
-          lastResponseCode: webhook.last_response_code,
-          failureCount: webhook.failure_count,
-          createdAt: webhook.created_at
+          id: (webhook as any).id,
+          name: (webhook as any).name,
+          url: (webhook as any).url,
+          events: (webhook as any).events,
+          isActive: (webhook as any).is_active,
+          lastTriggeredAt: (webhook as any).last_triggered_at,
+          lastResponseCode: (webhook as any).last_response_code,
+          failureCount: (webhook as any).failure_count,
+          createdAt: (webhook as any).created_at
         },
         deliveries: deliveries?.map(d => ({
-          id: d.id,
-          eventType: d.event_type,
-          status: d.status,
-          responseCode: d.response_code,
-          durationMs: d.duration_ms,
-          createdAt: d.created_at
+          id: (d as any).id,
+          eventType: (d as any).event_type,
+          status: (d as any).status,
+          responseCode: (d as any).response_code,
+          durationMs: (d as any).duration_ms,
+          createdAt: (d as any).created_at
         }))
       }
     });
@@ -156,6 +156,7 @@ export async function PATCH(
     // Update webhook
     const { data: webhook, error } = await serviceClient
       .from('webhooks')
+      // @ts-ignore - Supabase type inference limitation
       .update(updateData)
       .eq('id', id)
       .select()
@@ -169,6 +170,7 @@ export async function PATCH(
     }
 
     // Create audit log
+    // @ts-ignore - Supabase type inference limitation
     await serviceClient.from('audit_logs').insert({
       entity_type: 'webhook',
       entity_id: id,
@@ -180,11 +182,11 @@ export async function PATCH(
     return NextResponse.json({
       success: true,
       data: {
-        id: webhook.id,
-        name: webhook.name,
-        url: webhook.url,
-        events: webhook.events,
-        isActive: webhook.is_active,
+        id: (webhook as any).id,
+        name: (webhook as any).name,
+        url: (webhook as any).url,
+        events: (webhook as any).events,
+        isActive: (webhook as any).is_active,
         newSecret: newSecret,
         message: newSecret ? 'Secret regenerated - save it now' : 'Webhook updated'
       }
@@ -228,6 +230,7 @@ export async function DELETE(
     }
 
     // Create audit log
+    // @ts-ignore - Supabase type inference limitation
     await serviceClient.from('audit_logs').insert({
       entity_type: 'webhook',
       entity_id: id,

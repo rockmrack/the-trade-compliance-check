@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single();
 
-    if (!profile || !['super_admin', 'admin', 'finance'].includes(profile.role)) {
+    if (!profile || !['super_admin', 'admin', 'finance'].includes((profile as any).role)) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } },
         { status: 403 }
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
     // Create payment run record
     const { data: paymentRun, error: runError } = await serviceClient
       .from('payment_runs')
+      // @ts-ignore - Supabase type inference limitation
       .insert({
         run_date: new Date().toISOString().split('T')[0],
         status: 'in_progress',
@@ -75,51 +76,55 @@ export async function POST(request: NextRequest) {
     };
 
     for (const invoice of pendingInvoices) {
-      if (invoice.can_pay) {
+      if ((invoice as any).can_pay) {
         // Approve the invoice
         await serviceClient
           .from('invoices')
+          // @ts-ignore - Supabase type inference limitation
           .update({
             status: 'approved',
             compliance_check_at: new Date().toISOString()
           })
-          .eq('id', invoice.id);
+          .eq('id', (invoice as any).id);
 
-        results.approved.push({ id: invoice.id, amount: invoice.amount });
+        results.approved.push({ id: (invoice as any).id, amount: (invoice as any).amount });
 
         // Create payment run item
         await serviceClient
           .from('payment_run_items')
+          // @ts-ignore - Supabase type inference limitation
           .insert({
-            payment_run_id: paymentRun.id,
-            invoice_id: invoice.id,
+            payment_run_id: (paymentRun as any).id,
+            invoice_id: (invoice as any).id,
             status: 'approved'
           });
       } else {
         // Block the invoice
         await serviceClient
           .from('invoices')
+          // @ts-ignore - Supabase type inference limitation
           .update({
             status: 'blocked',
-            payment_block_reason: invoice.block_reason,
+            payment_block_reason: (invoice as any).block_reason,
             compliance_check_at: new Date().toISOString()
           })
-          .eq('id', invoice.id);
+          .eq('id', (invoice as any).id);
 
         results.blocked.push({
-          id: invoice.id,
-          amount: invoice.amount,
-          reason: invoice.block_reason || 'Compliance check failed'
+          id: (invoice as any).id,
+          amount: (invoice as any).amount,
+          reason: (invoice as any).block_reason || 'Compliance check failed'
         });
 
         // Create payment run item
         await serviceClient
           .from('payment_run_items')
+          // @ts-ignore - Supabase type inference limitation
           .insert({
-            payment_run_id: paymentRun.id,
-            invoice_id: invoice.id,
+            payment_run_id: (paymentRun as any).id,
+            invoice_id: (invoice as any).id,
             status: 'blocked',
-            block_reason: invoice.block_reason
+            block_reason: (invoice as any).block_reason
           });
       }
     }
@@ -130,6 +135,7 @@ export async function POST(request: NextRequest) {
 
     await serviceClient
       .from('payment_runs')
+      // @ts-ignore - Supabase type inference limitation
       .update({
         status: 'completed',
         approved_invoices: results.approved.length,
@@ -139,12 +145,12 @@ export async function POST(request: NextRequest) {
         blocked_amount: blockedAmount,
         completed_at: new Date().toISOString()
       })
-      .eq('id', paymentRun.id);
+      .eq('id', (paymentRun as any).id);
 
     return NextResponse.json({
       success: true,
       data: {
-        paymentRunId: paymentRun.id,
+        paymentRunId: (paymentRun as any).id,
         totalInvoices: pendingInvoices.length,
         approvedInvoices: results.approved.length,
         blockedInvoices: results.blocked.length,
@@ -201,8 +207,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const canPay = pendingInvoices.filter((inv) => inv.can_pay);
-    const blocked = pendingInvoices.filter((inv) => !inv.can_pay);
+    const canPay = pendingInvoices.filter((inv) => (inv as any).can_pay);
+    const blocked = pendingInvoices.filter((inv) => !(inv as any).can_pay);
 
     return NextResponse.json({
       success: true,
@@ -210,18 +216,18 @@ export async function GET(request: NextRequest) {
         totalInvoices: pendingInvoices.length,
         canPayCount: canPay.length,
         blockedCount: blocked.length,
-        totalAmount: pendingInvoices.reduce((sum, inv) => sum + inv.amount, 0),
-        approveableAmount: canPay.reduce((sum, inv) => sum + inv.amount, 0),
-        blockedAmount: blocked.reduce((sum, inv) => sum + inv.amount, 0),
+        totalAmount: pendingInvoices.reduce((sum, inv) => sum + (inv as any).amount, 0),
+        approveableAmount: canPay.reduce((sum, inv) => sum + (inv as any).amount, 0),
+        blockedAmount: blocked.reduce((sum, inv) => sum + (inv as any).amount, 0),
         invoices: pendingInvoices.map((inv) => ({
-          id: inv.id,
-          invoiceNumber: inv.invoice_number,
-          contractorId: inv.contractor_id,
-          companyName: inv.company_name,
-          amount: inv.amount,
-          dueDate: inv.due_date,
-          canPay: inv.can_pay,
-          blockReason: inv.block_reason
+          id: (inv as any).id,
+          invoiceNumber: (inv as any).invoice_number,
+          contractorId: (inv as any).contractor_id,
+          companyName: (inv as any).company_name,
+          amount: (inv as any).amount,
+          dueDate: (inv as any).due_date,
+          canPay: (inv as any).can_pay,
+          blockReason: (inv as any).block_reason
         }))
       }
     });

@@ -24,8 +24,8 @@ interface EmailOptions {
 
 interface SendGridResponse {
   success: boolean;
-  messageId?: string;
-  error?: string;
+  messageId?: string | undefined;
+  error?: string | undefined;
 }
 
 const SENDGRID_API_URL = 'https://api.sendgrid.com/v3/mail/send';

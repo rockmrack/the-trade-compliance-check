@@ -12,11 +12,13 @@ export async function ExpiringDocumentsWidget() {
   const thirtyDaysFromNow = new Date();
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
-  const { data: documents } = await supabase
+  const { data: documentsData } = await supabase
     .from('expiring_documents_view')
     .select('*')
     .order('expiry_date', { ascending: true })
     .limit(5);
+
+  const documents = (documentsData || []) as any[];
 
   return (
     <Card>

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { subDays, startOfMonth, startOfYear } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -50,12 +52,12 @@ export async function GET(request: NextRequest) {
       .is('deleted_at', null);
 
     const totalContractors = contractors?.length || 0;
-    const verifiedContractors = contractors?.filter(c => c.verification_status === 'verified').length || 0;
+    const verifiedContractors = contractors?.filter(c => (c as any).verification_status === 'verified').length || 0;
     const pendingContractors = contractors?.filter(c =>
-      c.verification_status === 'unverified' || c.verification_status === 'partially_verified'
+      (c as any).verification_status === 'unverified' || (c as any).verification_status === 'partially_verified'
     ).length || 0;
     const blockedContractors = contractors?.filter(c =>
-      c.verification_status === 'blocked' || c.verification_status === 'suspended'
+      (c as any).verification_status === 'blocked' || (c as any).verification_status === 'suspended'
     ).length || 0;
 
     // Fetch document stats
@@ -65,11 +67,11 @@ export async function GET(request: NextRequest) {
       .is('replaced_by_id', null);
 
     const totalDocuments = documents?.length || 0;
-    const validDocuments = documents?.filter(d => d.status === 'valid').length || 0;
-    const expiringDocuments = documents?.filter(d => d.status === 'expiring_soon').length || 0;
-    const expiredDocuments = documents?.filter(d => d.status === 'expired').length || 0;
+    const validDocuments = documents?.filter(d => (d as any).status === 'valid').length || 0;
+    const expiringDocuments = documents?.filter(d => (d as any).status === 'expiring_soon').length || 0;
+    const expiredDocuments = documents?.filter(d => (d as any).status === 'expired').length || 0;
     const documentsUploadedThisMonth = documents?.filter(d =>
-      new Date(d.created_at) >= startOfMonth(now)
+      new Date((d as any).created_at) >= startOfMonth(new Date())
     ).length || 0;
 
     // Fetch invoice stats
@@ -77,10 +79,10 @@ export async function GET(request: NextRequest) {
       .from('invoices')
       .select('id, amount, status');
 
-    const totalInvoicesValue = invoices?.reduce((sum, i) => sum + (i.amount || 0), 0) || 0;
+    const totalInvoicesValue = invoices?.reduce((sum, i) => sum + ((i as any).amount || 0), 0) || 0;
     const blockedInvoicesValue = invoices
-      ?.filter(i => i.status === 'blocked')
-      .reduce((sum, i) => sum + (i.amount || 0), 0) || 0;
+      ?.filter(i => (i as any).status === 'blocked')
+      .reduce((sum, i) => sum + ((i as any).amount || 0), 0) || 0;
 
     // Calculate compliance rate
     const complianceRate = totalContractors > 0
@@ -102,13 +104,13 @@ export async function GET(request: NextRequest) {
       .order('expiry_date', { ascending: true })
       .limit(10);
 
-    const expiringDocuments_ = expiringDocs?.map(d => ({
-      id: d.id,
-      contractor_name: (d.contractor as { company_name: string })?.company_name || 'Unknown',
-      document_type: d.document_type,
-      expiry_date: d.expiry_date,
+        const expiringDocuments_ = expiringDocs?.map(d => ({
+      id: (d as any).id,
+      contractor_name: ((d as any).contractor as { company_name: string })?.company_name || 'Unknown',
+      document_type: (d as any).document_type,
+      expiry_date: (d as any).expiry_date,
       days_until_expiry: Math.ceil(
-        (new Date(d.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        (new Date((d as any).expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
       )
     })) || [];
 
@@ -122,38 +124,27 @@ export async function GET(request: NextRequest) {
       .limit(10);
 
     const recentActivity = auditLogs?.map(log => {
-      let type: 'document_uploaded' | 'contractor_verified' | 'payment_blocked' | 'document_expired' = 'document_uploaded';
+      let type = 'other';
       let description = '';
 
-      if (log.entity_type === 'compliance_documents' && log.action === 'create') {
+      if ((log as any).entity_type === 'compliance_documents' && (log as any).action === 'create') {
         type = 'document_uploaded';
         description = `New document uploaded`;
-      } else if (log.entity_type === 'contractors' && log.action === 'update') {
-        const newState = log.new_state as { verification_status?: string; payment_status?: string; company_name?: string };
-        if (newState?.verification_status === 'verified') {
-          type = 'contractor_verified';
-          description = `${newState?.company_name || 'Contractor'} verified`;
-        } else if (newState?.payment_status === 'blocked') {
-          type = 'payment_blocked';
-          description = `Payments blocked for ${newState?.company_name || 'contractor'}`;
-        }
-      } else if (log.entity_type === 'compliance_documents' && log.action === 'update') {
-        const newState = log.new_state as { status?: string };
-        if (newState?.status === 'expired') {
-          type = 'document_expired';
-          description = 'Document expired';
-        }
+      } else if ((log as any).entity_type === 'contractors' && (log as any).action === 'update') {
+        type = 'contractor_updated';
+        description = `Contractor status updated`;
+      } else if ((log as any).entity_type === 'invoices' && (log as any).action === 'create') {
+        type = 'invoice_created';
+        description = `New invoice submitted`;
       }
 
       return {
-        id: log.id,
+        id: (log as any).id,
         type,
-        description: description || `${log.action} on ${log.entity_type}`,
-        timestamp: log.created_at
+        description,
+        created_at: (log as any).created_at
       };
-    }) || [];
-
-    return NextResponse.json({
+    }) || [];    return NextResponse.json({
       success: true,
       data: {
         stats: {

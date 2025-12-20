@@ -9,13 +9,15 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 export async function PaymentBlocksWidget() {
   const supabase = await createClient();
 
-  const { data: blockedPayments } = await supabase
+  const { data: blockedPaymentsData } = await supabase
     .from('payment_block_check')
     .select('*')
     .eq('can_pay', false)
     .not('block_reason', 'is', null)
     .order('due_date', { ascending: true })
     .limit(5);
+
+  const blockedPayments = (blockedPaymentsData || []) as any[];
 
   return (
     <Card>

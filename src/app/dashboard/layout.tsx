@@ -19,11 +19,13 @@ export default async function DashboardLayout({
   }
 
   // Get user profile
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('users')
     .select('*')
     .eq('id', user.id)
     .single();
+
+  const profile = profileData as any;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">

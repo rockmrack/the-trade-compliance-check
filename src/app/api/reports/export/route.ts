@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { format, subDays, startOfMonth, startOfYear } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 function escapeCsvField(field: string | number | null | undefined): string {
   if (field === null || field === undefined) return '';
   const str = String(field);
@@ -87,20 +89,20 @@ export async function GET(request: NextRequest) {
         // CSV Rows
         contractors?.forEach(c => {
           csvContent += [
-            escapeCsvField(c.company_name),
-            escapeCsvField(c.company_number),
-            escapeCsvField(c.contact_name),
-            escapeCsvField(c.email),
-            escapeCsvField(c.phone),
-            escapeCsvField(c.trade_types?.join('; ')),
-            escapeCsvField([c.address_line1, c.address_line2, c.address_city, c.address_county].filter(Boolean).join(', ')),
-            escapeCsvField(c.address_postcode),
-            escapeCsvField(c.vat_number),
-            escapeCsvField(c.verification_status),
-            escapeCsvField(c.payment_status),
-            escapeCsvField(c.risk_score),
-            escapeCsvField(c.last_verified_at ? format(new Date(c.last_verified_at), 'dd/MM/yyyy') : ''),
-            escapeCsvField(format(new Date(c.created_at), 'dd/MM/yyyy'))
+            escapeCsvField((c as any).company_name),
+            escapeCsvField((c as any).company_number),
+            escapeCsvField((c as any).contact_name),
+            escapeCsvField((c as any).email),
+            escapeCsvField((c as any).phone),
+            escapeCsvField((c as any).trade_types?.join('; ')),
+            escapeCsvField([(c as any).address_line1, (c as any).address_line2, (c as any).address_city, (c as any).address_county].filter(Boolean).join(', ')),
+            escapeCsvField((c as any).address_postcode),
+            escapeCsvField((c as any).vat_number),
+            escapeCsvField((c as any).verification_status),
+            escapeCsvField((c as any).payment_status),
+            escapeCsvField((c as any).risk_score),
+            escapeCsvField((c as any).last_verified_at ? format(new Date((c as any).last_verified_at), 'dd/MM/yyyy') : ''),
+            escapeCsvField(format(new Date((c as any).created_at), 'dd/MM/yyyy'))
           ].join(',') + '\n';
         });
         break;
@@ -134,17 +136,17 @@ export async function GET(request: NextRequest) {
         // CSV Rows
         documents?.forEach(d => {
           csvContent += [
-            escapeCsvField((d.contractor as { company_name: string })?.company_name),
-            escapeCsvField(formatDocumentType(d.document_type)),
-            escapeCsvField(d.provider_name),
-            escapeCsvField(d.policy_number || d.registration_number),
-            escapeCsvField(d.coverage_amount ? formatCurrency(d.coverage_amount) : ''),
-            escapeCsvField(d.start_date ? format(new Date(d.start_date), 'dd/MM/yyyy') : ''),
-            escapeCsvField(format(new Date(d.expiry_date), 'dd/MM/yyyy')),
-            escapeCsvField(d.status),
-            escapeCsvField(d.verification_score),
-            escapeCsvField(d.manually_verified ? 'Yes' : 'No'),
-            escapeCsvField(format(new Date(d.created_at), 'dd/MM/yyyy'))
+            escapeCsvField(((d as any).contractor as { company_name: string })?.company_name),
+            escapeCsvField(formatDocumentType((d as any).document_type)),
+            escapeCsvField((d as any).provider_name),
+            escapeCsvField((d as any).policy_number || (d as any).registration_number),
+            escapeCsvField((d as any).coverage_amount ? formatCurrency((d as any).coverage_amount) : ''),
+            escapeCsvField((d as any).start_date ? format(new Date((d as any).start_date), 'dd/MM/yyyy') : ''),
+            escapeCsvField(format(new Date((d as any).expiry_date), 'dd/MM/yyyy')),
+            escapeCsvField((d as any).status),
+            escapeCsvField((d as any).verification_score),
+            escapeCsvField((d as any).manually_verified ? 'Yes' : 'No'),
+            escapeCsvField((d as any).created_at ? format(new Date((d as any).created_at), 'dd/MM/yyyy') : '')
           ].join(',') + '\n';
         });
         break;
@@ -176,19 +178,19 @@ export async function GET(request: NextRequest) {
         // CSV Rows
         summary?.forEach(s => {
           csvContent += [
-            escapeCsvField(s.company_name),
-            escapeCsvField(s.company_number),
-            escapeCsvField(s.verification_status),
-            escapeCsvField(s.payment_status),
-            escapeCsvField(s.risk_score),
-            escapeCsvField(s.total_documents),
-            escapeCsvField(s.valid_documents),
-            escapeCsvField(s.expiring_documents),
-            escapeCsvField(s.expired_documents),
-            escapeCsvField(s.pending_documents),
-            escapeCsvField(s.next_expiry_date ? format(new Date(s.next_expiry_date), 'dd/MM/yyyy') : ''),
-            escapeCsvField(s.last_document_update ? format(new Date(s.last_document_update), 'dd/MM/yyyy HH:mm') : ''),
-            escapeCsvField(s.last_verified_at ? format(new Date(s.last_verified_at), 'dd/MM/yyyy') : '')
+            escapeCsvField((s as any).company_name),
+            escapeCsvField((s as any).company_number),
+            escapeCsvField((s as any).verification_status),
+            escapeCsvField((s as any).payment_status),
+            escapeCsvField((s as any).risk_score),
+            escapeCsvField((s as any).total_documents),
+            escapeCsvField((s as any).valid_documents),
+            escapeCsvField((s as any).expiring_documents),
+            escapeCsvField((s as any).expired_documents),
+            escapeCsvField((s as any).pending_documents),
+            escapeCsvField((s as any).next_expiry_date ? format(new Date((s as any).next_expiry_date), 'dd/MM/yyyy') : ''),
+            escapeCsvField((s as any).last_document_update ? format(new Date((s as any).last_document_update), 'dd/MM/yyyy HH:mm') : ''),
+            escapeCsvField((s as any).last_verified_at ? format(new Date((s as any).last_verified_at), 'dd/MM/yyyy') : '')
           ].join(',') + '\n';
         });
         break;
@@ -225,20 +227,20 @@ export async function GET(request: NextRequest) {
         // CSV Rows
         invoices?.forEach(i => {
           csvContent += [
-            escapeCsvField(i.invoice_number),
-            escapeCsvField((i.contractor as { company_name: string })?.company_name),
-            escapeCsvField(formatCurrency(i.amount)),
-            escapeCsvField(i.currency),
-            escapeCsvField(i.description),
-            escapeCsvField(i.project_reference),
-            escapeCsvField(format(new Date(i.due_date), 'dd/MM/yyyy')),
-            escapeCsvField(i.status),
-            escapeCsvField((i.contractor as { verification_status: string })?.verification_status),
-            escapeCsvField(i.payment_block_reason),
-            escapeCsvField(i.approved_by),
-            escapeCsvField(i.approved_at ? format(new Date(i.approved_at), 'dd/MM/yyyy') : ''),
-            escapeCsvField(i.paid_at ? format(new Date(i.paid_at), 'dd/MM/yyyy') : ''),
-            escapeCsvField(format(new Date(i.created_at), 'dd/MM/yyyy'))
+            escapeCsvField((i as any).invoice_number),
+            escapeCsvField(((i as any).contractor as { company_name: string })?.company_name),
+            escapeCsvField(formatCurrency((i as any).amount)),
+            escapeCsvField((i as any).currency),
+            escapeCsvField((i as any).description),
+            escapeCsvField((i as any).project_reference),
+            escapeCsvField(format(new Date((i as any).due_date), 'dd/MM/yyyy')),
+            escapeCsvField((i as any).status),
+            escapeCsvField(((i as any).contractor as { verification_status: string })?.verification_status),
+            escapeCsvField((i as any).payment_block_reason),
+            escapeCsvField((i as any).approved_by),
+            escapeCsvField((i as any).approved_at ? format(new Date((i as any).approved_at), 'dd/MM/yyyy') : ''),
+            escapeCsvField((i as any).paid_at ? format(new Date((i as any).paid_at), 'dd/MM/yyyy') : ''),
+            escapeCsvField(format(new Date((i as any).created_at), 'dd/MM/yyyy'))
           ].join(',') + '\n';
         });
         break;

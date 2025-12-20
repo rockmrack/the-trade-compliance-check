@@ -64,7 +64,7 @@ export default function ContractorsPage() {
 
       const { data, error, count } = await query;
       if (error) throw error;
-      return { contractors: data, total: count || 0 };
+      return { contractors: data as any[], total: count || 0 };
     }
   });
 

@@ -221,9 +221,9 @@ export async function getCompanyData(
     dateOfCessation: companyData.date_of_cessation,
     registeredOfficeAddress: {
       line1: companyData.registered_office_address.address_line_1 || '',
-      line2: companyData.registered_office_address.address_line_2,
+      line2: companyData.registered_office_address.address_line_2 || undefined,
       city: companyData.registered_office_address.locality || '',
-      county: companyData.registered_office_address.region,
+      county: companyData.registered_office_address.region || undefined,
       postcode: companyData.registered_office_address.postal_code || '',
       country: companyData.registered_office_address.country || 'United Kingdom'
     },
@@ -244,11 +244,11 @@ export async function getCompanyData(
         nationality: officer.nationality,
         occupation: officer.occupation,
         address: {
-          line1: officer.address?.address_line_1,
-          city: officer.address?.locality,
-          county: officer.address?.region,
-          postcode: officer.address?.postal_code,
-          country: officer.address?.country
+          line1: officer.address?.address_line_1 || '',
+          city: officer.address?.locality || '',
+          county: officer.address?.region || undefined,
+          postcode: officer.address?.postal_code || '',
+          country: officer.address?.country || 'United Kingdom'
         }
       })
     ),

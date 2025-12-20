@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
             companyNumber: chData.companyNumber,
             status: chData.companyStatus,
             incorporatedDate: chData.dateOfCreation,
-            registeredAddress: formatAddress(chData.registeredOfficeAddress),
+            registeredAddress: formatAddress(chData.registeredOfficeAddress as any),
             isActive: chData.companyStatus.toLowerCase() === 'active'
           };
         } catch {
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
         verificationStatus: 'unverified',
         overallScore: 0,
         badges: [],
-        companiesHouse: companiesHouseResult,
+        ...(companiesHouseResult ? { companiesHouse: companiesHouseResult } : {}),
         disclaimer: 'This company is not registered in our verification system. This does not necessarily mean they are not legitimate - please conduct your own due diligence.'
       };
 
@@ -142,30 +142,30 @@ export async function POST(request: NextRequest) {
     const { data: documents } = await supabase
       .from('compliance_documents')
       .select('document_type, status, coverage_amount, expiry_date, provider_name')
-      .eq('contractor_id', contractor.id)
+      .eq('contractor_id', (contractor as any).id)
       .is('replaced_by_id', null)
       .order('expiry_date', { ascending: true });
 
     // Format documents for public view
     const publicDocuments: PublicDocumentSummary[] = (documents || []).map((doc) => ({
-      type: doc.document_type,
-      status: doc.status,
-      coverageAmount: doc.coverage_amount || undefined,
-      expiryDate: doc.expiry_date,
-      providerName: doc.provider_name
+      type: (doc as any).document_type,
+      status: (doc as any).status,
+      coverageAmount: (doc as any).coverage_amount || undefined,
+      expiryDate: (doc as any).expiry_date,
+      providerName: (doc as any).provider_name
     }));
 
     // Get Companies House data (from cache or fresh)
     let companiesHouseData: PublicCompaniesHouseData | undefined;
 
-    if (contractor.company_number) {
+    if ((contractor as any).company_number) {
       try {
-        const chData = contractor.companies_house_data as Record<string, unknown> ||
-          await getCompanyData(contractor.company_number);
+        const chData = (contractor as any).companies_house_data as Record<string, unknown> ||
+          await getCompanyData((contractor as any).company_number);
 
         companiesHouseData = {
-          companyName: String(chData.companyName || contractor.company_name),
-          companyNumber: contractor.company_number,
+          companyName: String(chData.companyName || (contractor as any).company_name),
+          companyNumber: (contractor as any).company_number,
           status: String(chData.companyStatus || 'unknown'),
           incorporatedDate: String(chData.dateOfCreation || ''),
           registeredAddress: chData.registeredOfficeAddress
@@ -186,23 +186,23 @@ export async function POST(request: NextRequest) {
 
     // Build contractor profile
     const contractorProfile: PublicContractorProfile = {
-      companyName: contractor.company_name,
-      tradingName: contractor.trading_name || undefined,
-      tradeTypes: contractor.trade_types,
-      verificationStatus: contractor.verification_status,
+      companyName: (contractor as any).company_name,
+      tradingName: (contractor as any).trading_name || undefined,
+      tradeTypes: (contractor as any).trade_types,
+      verificationStatus: (contractor as any).verification_status,
       documents: publicDocuments,
       certifications: extractCertifications(publicDocuments),
-      memberSince: contractor.onboarded_at || contractor.last_verified_at || ''
+      memberSince: (contractor as any).onboarded_at || (contractor as any).last_verified_at || ''
     };
 
     const result: PublicVerificationResult = {
       found: true,
       contractor: contractorProfile,
-      companiesHouse: companiesHouseData,
-      verificationStatus: contractor.verification_status,
+      ...(companiesHouseData ? { companiesHouse: companiesHouseData } : {}),
+      verificationStatus: (contractor as any).verification_status,
       overallScore,
       badges,
-      lastVerifiedAt: contractor.last_verified_at || undefined,
+      lastVerifiedAt: (contractor as any).last_verified_at || undefined,
       disclaimer: 'This verification is based on documents and data submitted to our system. Always conduct your own due diligence before engaging any contractor.'
     };
 

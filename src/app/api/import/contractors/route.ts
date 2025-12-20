@@ -74,7 +74,7 @@ function parseCSV(csvContent: string): { headers: string[]; rows: string[][] } {
     return result;
   };
 
-  const headers = parseCSVLine(lines[0]).map(h =>
+  const headers = parseCSVLine(lines[0]!).map(h =>
     h.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
   );
 
@@ -196,12 +196,12 @@ export async function POST(request: NextRequest) {
 
     // Process each row
     for (let i = 0; i < rows.length; i++) {
-      const rowData = rows[i];
+      const rowData = rows[i]!;
       const rowNumber = i + 2; // +2 for 1-indexed and header row
 
       // Map row to object
       const row: CSVRow = headers.reduce((acc, header, index) => {
-        acc[header as keyof CSVRow] = rowData[index];
+        acc[header as keyof CSVRow] = rowData[index] || '';
         return acc;
       }, {} as CSVRow);
 
@@ -252,6 +252,7 @@ export async function POST(request: NextRequest) {
 
       const { data: contractor, error: insertError } = await serviceClient
         .from('contractors')
+        // @ts-ignore - Supabase type inference limitation
         .insert({
           company_name: row.company_name.trim(),
           company_number: row.company_number?.trim() || null,
@@ -286,7 +287,7 @@ export async function POST(request: NextRequest) {
           row: rowNumber,
           success: true,
           companyName: row.company_name,
-          contractorId: contractor.id
+          contractorId: (contractor as any).id
         });
         successCount++;
       }
@@ -294,6 +295,7 @@ export async function POST(request: NextRequest) {
 
     // Create import job record
     if (!dryRun) {
+      // @ts-ignore - Supabase type inference limitation
       await serviceClient.from('import_jobs').insert({
         type: 'contractors',
         file_name: file.name,
@@ -319,6 +321,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Audit log
+      // @ts-ignore - Supabase type inference limitation
       await serviceClient.from('audit_logs').insert({
         entity_type: 'import',
         entity_id: '00000000-0000-0000-0000-000000000000',

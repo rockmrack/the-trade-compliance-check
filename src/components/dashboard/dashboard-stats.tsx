@@ -144,10 +144,12 @@ async function getDocumentStats(supabase: Awaited<ReturnType<typeof createClient
 }
 
 async function getPaymentStats(supabase: Awaited<ReturnType<typeof createClient>>) {
-  const { data: blockedInvoices } = await supabase
+  const { data: blockedInvoicesData } = await supabase
     .from('invoices')
     .select('amount')
     .eq('status', 'blocked');
+
+  const blockedInvoices = blockedInvoicesData as any[];
 
   const blocked = blockedInvoices?.length || 0;
   const blockedAmount = blockedInvoices?.reduce((sum, inv) => sum + inv.amount, 0) || 0;

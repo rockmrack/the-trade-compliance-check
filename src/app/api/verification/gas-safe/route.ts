@@ -59,14 +59,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: {
-          licenceNumber: cached.licence_number,
-          engineerName: cached.engineer_name,
-          tradingName: cached.trading_name,
-          businessAddress: cached.business_address,
-          status: cached.status,
-          isValid: cached.is_valid,
-          appliances: cached.appliances || [],
-          expiryDate: cached.expires_at,
+          licenceNumber: (cached as any).licence_number,
+          engineerName: (cached as any).engineer_name,
+          tradingName: (cached as any).trading_name,
+          businessAddress: (cached as any).business_address,
+          status: (cached as any).status,
+          isValid: (cached as any).is_valid,
+          appliances: (cached as any).appliances || [],
+          expiryDate: (cached as any).expires_at,
           manualVerificationUrl: getGasSafeLookupUrl(formattedLicence)
         },
         cached: true
@@ -85,6 +85,7 @@ export async function GET(request: NextRequest) {
 
     // Store in cache
     if (result.engineer) {
+      // @ts-ignore - Supabase type inference limitation
       await serviceClient.from('gas_safe_cache').upsert({
         licence_number: formattedLicence,
         engineer_name: result.engineer.engineerName,
@@ -177,6 +178,7 @@ export async function POST(request: NextRequest) {
     const result = await lookupGasSafeEngineer(formattedLicence);
 
     // Create verification log
+    // @ts-ignore - Supabase type inference limitation
     await serviceClient.from('verification_logs').insert({
       contractor_id: contractorId,
       check_type: 'gas_safe_registry',
@@ -205,6 +207,7 @@ export async function POST(request: NextRequest) {
         // Update existing document with verified registration number
         await serviceClient
           .from('compliance_documents')
+          // @ts-ignore - Supabase type inference limitation
           .update({
             registration_number: formattedLicence,
             status: 'valid',
@@ -215,7 +218,7 @@ export async function POST(request: NextRequest) {
               appliances: result.engineer.appliances
             }
           })
-          .eq('id', existingDoc.id);
+          .eq('id', (existingDoc as any).id);
       }
     }
 

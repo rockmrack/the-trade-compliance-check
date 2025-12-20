@@ -96,7 +96,7 @@ export default function ContractorDocumentsPage() {
         .eq('id', contractorId)
         .single();
       if (error) throw error;
-      return data;
+      return data as any;
     }
   });
 
@@ -111,7 +111,7 @@ export default function ContractorDocumentsPage() {
         .is('replaced_by_id', null)
         .order('expiry_date', { ascending: true });
       if (error) throw error;
-      return data;
+      return data as any[];
     }
   });
 

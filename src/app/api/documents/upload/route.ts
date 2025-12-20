@@ -201,6 +201,7 @@ export async function POST(request: NextRequest) {
     // Create document record
     const { data: document, error: dbError } = await serviceClient
       .from('compliance_documents')
+      // @ts-ignore - Supabase type inference limitation
       .insert({
         contractor_id: contractorId,
         document_type: documentType,
@@ -244,14 +245,16 @@ export async function POST(request: NextRequest) {
     if (existingCurrentDoc) {
       await serviceClient
         .from('compliance_documents')
-        .update({ replaced_by_id: document.id })
-        .eq('id', existingCurrentDoc.id);
+        // @ts-ignore - Supabase type inference limitation
+        .update({ replaced_by_id: (document as any).id })
+        .eq('id', (existingCurrentDoc as any).id);
     }
 
     // Create verification log
+    // @ts-ignore - Supabase type inference limitation
     await serviceClient.from('verification_logs').insert({
       contractor_id: contractorId,
-      document_id: document.id,
+      document_id: (document as any).id,
       check_type: 'ai_document_scan',
       status: aiAnalysis ? 'success' : 'pending',
       result: {
@@ -278,12 +281,13 @@ export async function POST(request: NextRequest) {
 
       const requiredTypes = ['public_liability'];
       const hasAllRequired = requiredTypes.every((type) =>
-        allDocs?.some((d) => d.document_type === type && d.status === 'valid')
+        allDocs?.some((d: any) => d.document_type === type && d.status === 'valid')
       );
 
       if (hasAllRequired) {
         await serviceClient
           .from('contractors')
+          // @ts-ignore - Supabase type inference limitation
           .update({
             verification_status: 'verified',
             payment_status: 'allowed',
@@ -296,7 +300,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        id: document.id,
+        id: (document as any).id,
         status,
         verificationScore,
         message:

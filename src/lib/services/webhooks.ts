@@ -67,9 +67,15 @@ export function verifyWebhookSignature(
   try {
     const parts = signature.split(',').reduce((acc, part) => {
       const [key, value] = part.split('=');
-      acc[key] = value;
+      if (key && value) {
+        acc[key] = value;
+      }
       return acc;
     }, {} as Record<string, string>);
+
+    if (!parts.t || !parts.v1) {
+      return false;
+    }
 
     const timestamp = parseInt(parts.t, 10);
     const providedSignature = parts.v1;

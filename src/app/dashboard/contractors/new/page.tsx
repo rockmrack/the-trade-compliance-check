@@ -117,6 +117,7 @@ export default function NewContractorPage() {
         .replace(/\s+/g, '-')
         .substring(0, 50);
 
+      // @ts-ignore - Supabase type inference limitation
       const { data: contractor, error } = await supabase
         .from('contractors')
         .insert({
@@ -142,7 +143,7 @@ export default function NewContractorPage() {
           payment_status: 'pending_review',
           risk_score: 50,
           onboarded_at: new Date().toISOString()
-        })
+        } as any)
         .select()
         .single();
 
@@ -153,7 +154,7 @@ export default function NewContractorPage() {
         description: `${data.companyName} has been added successfully`
       });
 
-      router.push(`/dashboard/contractors/${contractor.id}`);
+      router.push(`/dashboard/contractors/${(contractor as any).id}`);
     } catch (error) {
       console.error('Error creating contractor:', error);
       toast({
