@@ -3,8 +3,9 @@
 -- Version: 1.0.1
 -- ===========================================
 
--- Add deleted_at column to contractors for soft deletes
+-- Add deleted_at and created_by columns to contractors
 ALTER TABLE public.contractors ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+ALTER TABLE public.contractors ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES public.users(id);
 CREATE INDEX IF NOT EXISTS idx_contractors_deleted_at ON public.contractors(deleted_at) WHERE deleted_at IS NOT NULL;
 
 -- Contractor Access Tokens (for passwordless portal access)

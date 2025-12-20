@@ -249,7 +249,7 @@ export async function DELETE(
       .update({
         deleted_at: new Date().toISOString(),
         is_active: false
-      } as any)
+      })
       .eq('id', id);
 
     if (error) {

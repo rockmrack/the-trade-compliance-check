@@ -86,6 +86,8 @@ export type Database = {
           companies_house_fetched_at: string | null;
           created_at: string;
           updated_at: string;
+          deleted_at: string | null;
+          created_by: string | null;
         };
         Insert: {
           id?: string;
@@ -117,6 +119,8 @@ export type Database = {
           companies_house_fetched_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          deleted_at?: string | null;
+          created_by?: string | null;
         };
         Update: {
           id?: string;
@@ -148,6 +152,7 @@ export type Database = {
           companies_house_fetched_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          deleted_at?: string | null;
         };
       };
       compliance_documents: {
