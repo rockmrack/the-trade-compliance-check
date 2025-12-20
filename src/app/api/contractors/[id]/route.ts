@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const updateContractorSchema = z.object({
   companyName: z.string().min(1).optional(),
   companyNumber: z.string().optional(),

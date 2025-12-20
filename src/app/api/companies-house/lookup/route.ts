@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { lookupCompany, searchCompanies, type CompanyProfile } from '@/lib/services/companies-house';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Search or lookup companies
 export async function GET(request: NextRequest) {
   try {

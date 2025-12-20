@@ -3,6 +3,8 @@ import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { generateWebhookSecret, WEBHOOK_EVENTS } from '@/lib/services/webhooks';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const updateWebhookSchema = z.object({
   name: z.string().min(1).optional(),
   url: z.string().url().optional(),

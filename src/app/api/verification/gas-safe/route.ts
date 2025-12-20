@@ -7,6 +7,8 @@ import {
   validateGasSafeIdCard
 } from '@/lib/services/gas-safe';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Lookup Gas Safe engineer
 export async function GET(request: NextRequest) {
   try {

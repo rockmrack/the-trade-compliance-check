@@ -3,6 +3,8 @@ import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { generateWebhookSecret, WEBHOOK_EVENTS, WebhookEvent } from '@/lib/services/webhooks';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const webhookSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   url: z.string().url('Valid URL required'),
