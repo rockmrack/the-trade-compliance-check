@@ -32,14 +32,19 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Extract contractor details (workaround for Supabase type inference)
+    // @ts-ignore - Supabase type inference limitation
+    const { email: contractorEmail, contact_name, company_name, id: contractorId } = contractor;
+
     // Generate access token
     const accessToken = uuidv4();
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24); // 24 hour expiry
 
     // Store token in database
+    // @ts-ignore - Supabase type inference limitation
     await serviceClient.from('contractor_access_tokens').insert({
-      contractor_id: contractor.id,
+      contractor_id: contractorId,
       token: accessToken,
       expires_at: expiresAt.toISOString(),
       created_at: new Date().toISOString()
@@ -52,7 +57,7 @@ export async function POST(request: NextRequest) {
     // Send email with access link
     try {
       await sendEmail({
-        to: contractor.email,
+        to: contractorEmail,
         subject: 'Your Trade Compliance Portal Access Link',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -60,9 +65,9 @@ export async function POST(request: NextRequest) {
               <h1 style="color: white; margin: 0;">Trade Compliance Engine</h1>
             </div>
             <div style="padding: 30px; background: #f8fafc;">
-              <p style="font-size: 16px; color: #334155;">Hello ${contractor.contact_name},</p>
+              <p style="font-size: 16px; color: #334155;">Hello ${contact_name},</p>
               <p style="font-size: 16px; color: #334155;">
-                You requested access to your contractor compliance portal for <strong>${contractor.company_name}</strong>.
+                You requested access to your contractor compliance portal for <strong>${company_name}</strong>.
               </p>
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${accessLink}"
@@ -83,9 +88,9 @@ export async function POST(request: NextRequest) {
             </div>
           </div>
         `,
-        text: `Hello ${contractor.contact_name},
+        text: `Hello ${contact_name},
 
-You requested access to your contractor compliance portal for ${contractor.company_name}.
+You requested access to your contractor compliance portal for ${company_name}.
 
 Access your portal: ${accessLink}
 
@@ -99,12 +104,13 @@ Trade Compliance Engine`
     }
 
     // Create audit log
+    // @ts-ignore - Supabase type inference limitation
     await serviceClient.from('audit_logs').insert({
       entity_type: 'contractor_access',
-      entity_id: contractor.id,
+      entity_id: contractorId,
       action: 'access_requested',
       new_values: {
-        email: contractor.email,
+        email: contractorEmail,
         token_expires: expiresAt.toISOString()
       }
     });

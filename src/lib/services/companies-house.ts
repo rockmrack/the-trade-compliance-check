@@ -445,3 +445,7 @@ function formatOfficerRole(role: string): string {
   };
   return mapping[role] || role;
 }
+
+// Export alias for backward compatibility
+export const lookupCompany = getCompanyData;
+export type CompanyProfile = CompaniesHouseData;

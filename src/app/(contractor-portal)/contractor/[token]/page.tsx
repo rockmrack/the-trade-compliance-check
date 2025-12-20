@@ -435,7 +435,10 @@ export default function ContractorDashboardPage() {
                     if (type) {
                       const index = parseInt(type) - 1;
                       if (index >= 0 && index < UK_DOCUMENT_TYPES.length) {
-                        handleFileUpload(UK_DOCUMENT_TYPES[index].value, file);
+                        const docType = UK_DOCUMENT_TYPES[index];
+                        if (docType) {
+                          handleFileUpload(docType.value, file);
+                        }
                       }
                     }
                   }

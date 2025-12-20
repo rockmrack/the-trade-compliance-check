@@ -21,49 +21,49 @@ export async function GET(request: NextRequest) {
 
     if (companyNumber) {
       // Lookup specific company by number
-      const result = await lookupCompany(companyNumber);
+      try {
+        const company = await lookupCompany(companyNumber);
 
-      if (!result.success) {
+        return NextResponse.json({
+          success: true,
+          data: company
+        });
+      } catch (error: any) {
         return NextResponse.json(
           {
             success: false,
             error: {
               code: 'LOOKUP_FAILED',
-              message: result.error || 'Failed to lookup company'
+              message: error.message || 'Failed to lookup company'
             }
           },
-          { status: result.error?.includes('not found') ? 404 : 500 }
+          { status: error.statusCode || (error.message?.includes('not found') ? 404 : 500) }
         );
       }
-
-      return NextResponse.json({
-        success: true,
-        data: result.company
-      });
     } else if (query) {
       // Search companies by name
-      const result = await searchCompanies(query);
+      try {
+        const companies = await searchCompanies(query);
 
-      if (!result.success) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            items: companies,
+            total: companies.length
+          }
+        });
+      } catch (error: any) {
         return NextResponse.json(
           {
             success: false,
             error: {
               code: 'SEARCH_FAILED',
-              message: result.error || 'Failed to search companies'
+              message: error.message || 'Failed to search companies'
             }
           },
-          { status: 500 }
+          { status: error.statusCode || 500 }
         );
       }
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          items: result.companies,
-          total: result.companies?.length || 0
-        }
-      });
     } else {
       return NextResponse.json(
         {
@@ -108,44 +108,43 @@ export async function POST(request: NextRequest) {
     }
 
     // Lookup company
-    const result = await lookupCompany(companyNumber);
-
-    if (!result.success || !result.company) {
+    let company: CompanyProfile;
+    try {
+      company = await lookupCompany(companyNumber);
+    } catch (error: any) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'LOOKUP_FAILED',
-            message: result.error || 'Failed to lookup company'
+            message: error.message || 'Failed to lookup company'
           }
         },
-        { status: 404 }
+        { status: error.statusCode || 404 }
       );
     }
 
-    const company = result.company as CompanyProfile;
-
     // Determine if company is in good standing
     const activeStatuses = ['active', 'open'];
-    const isActive = activeStatuses.includes(company.company_status?.toLowerCase() || '');
-    const isInGoodStanding = isActive && !company.has_charges && !company.has_insolvency_history;
+    const isActive = activeStatuses.includes(company.companyStatus?.toLowerCase() || '');
+    const isInGoodStanding = isActive && !company.hasCharges && !company.hasInsolvencyHistory;
 
     // Format response data
     const verificationData = {
-      companyNumber: company.company_number,
-      companyName: company.company_name,
-      status: company.company_status,
-      type: company.type,
-      incorporationDate: company.date_of_creation,
-      registeredOffice: company.registered_office_address,
-      sicCodes: company.sic_codes,
+      companyNumber: company.companyNumber,
+      companyName: company.companyName,
+      status: company.companyStatus,
+      type: company.companyType,
+      incorporationDate: company.dateOfCreation,
+      registeredOffice: company.registeredOfficeAddress,
+      sicCodes: company.sicCodes,
       isActive,
       isInGoodStanding,
-      hasCharges: company.has_charges || false,
-      hasInsolvencyHistory: company.has_insolvency_history || false,
-      lastAccountsDate: company.accounts?.last_accounts?.made_up_to,
-      nextAccountsDue: company.accounts?.next_due,
-      confirmationStatementDue: company.confirmation_statement?.next_due,
+      hasCharges: company.hasCharges || false,
+      hasInsolvencyHistory: company.hasInsolvencyHistory || false,
+      lastAccountsDate: company.lastAccountsDate,
+      nextAccountsDue: company.nextAccountsDue,
+      confirmationStatementDue: company.lastConfirmationStatementDate,
       verifiedAt: new Date().toISOString()
     };
 
