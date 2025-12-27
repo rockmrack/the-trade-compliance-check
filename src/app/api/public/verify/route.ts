@@ -6,6 +6,8 @@ import type { PublicVerificationResult, PublicContractorProfile, PublicDocumentS
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
+export const dynamic = 'force-dynamic';
+
 // Rate limiting for public endpoint
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
